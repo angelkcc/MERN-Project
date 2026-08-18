@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import User from "../models/user.model";
 import { hashPassword } from "../utlis/bcrypt.utlis";
+import AppError from "../utlis/appError.utlis";
+import sendResponse from "../utlis/sendResponse.utlis";
 
 //register
 export const register = async (req: Request, res: Response, next: NextFunction) => {
@@ -10,27 +12,30 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
         if(!full_name)
         {
-            const error: any= new Error("full_name is required");
+            /*const error: any= new Error("full_name is required");
             error.status="fail";
             error.statusCode=400;
             error.success=false;
-            throw error;
+            throw error;*/
+            throw new AppError("full_name is required",400);
         }
         if(!email)
         {
-            const error: any= new Error("email is required");
+           /* const error: any= new Error("email is required");
             error.status="fail";
             error.statusCode=400;
             error.success=false;
-            throw error;
+            throw error;*/
+            throw new AppError("email is required",400);
         }
         if(!password)
         {
-            const error: any= new Error("password is required");
+            /*const error: any= new Error("password is required");
             error.status="fail";
             error.statusCode=400;
             error.success=false;
-            throw error;
+            throw error;*/
+            throw new AppError("password is required",400);
         }
 
         //create user instance--instance is created because of mongoose model and it is not saved in database yet
@@ -56,10 +61,15 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
 
 
         //send response
-        res.status(201).json({
+        /*res.status(201).json({
             message: "user registered successfully",
             success: true,
             status: "success",
+            data: rest
+        });*/
+        sendResponse(res, {
+            statusCode: 201,
+            message: "user registered successfully",
             data: rest
         });
     } catch(error){
