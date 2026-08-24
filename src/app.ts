@@ -2,7 +2,8 @@ import express, { NextFunction, Request, Response } from "express";
 import errorHandler from "./middlewares/errorHandler.middleware";
 
 //importing routes
-import authRoutes from "./routes/auth.routes";
+import routes from "./routes/index";
+import AppError from "./utlis/appError.utlis";
 
 //! @types/<pkg_name>
 // npm i --save-dev <pkg_name>
@@ -24,8 +25,8 @@ app.get("/", (_: Request, res: Response) => {
   });
 });
 
-//* using routes
-app.use('/api/auth', authRoutes);
+//using routes
+app.use("/api/v1", routes);
 
 //* path not found
 app.use((req: Request, _: Response, next: NextFunction) => {
@@ -34,7 +35,7 @@ app.use((req: Request, _: Response, next: NextFunction) => {
   error.statusCode = 404;
   error.status = "fail";
   error.success = false;
-  next(error);
+  next(new AppError(message, 404));
 });
 
 //* error handler middleware

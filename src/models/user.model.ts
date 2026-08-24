@@ -1,9 +1,5 @@
 import mongoose, { Document } from "mongoose";
-
-enum Role {
-  USER = "USER",
-  ADMIN = "ADMIN",
-}
+import { Role } from "../types/enum.types";
 
 interface IUser extends Document {
   full_name: string;
@@ -30,6 +26,7 @@ const userSchema = new mongoose.Schema<IUser>({
     type: String,
     required: [true, "Password is required"],
     minlength: [6, "Password must be at least 6 characters long"],
+    select: false, //this will exclude password from query results by default
   },
   role: {
     type: String,

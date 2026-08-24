@@ -1,12 +1,15 @@
-import { NextFunction, Request, Response } from "express";
+
 import User from "../models/user.model";
-import { hashPassword } from "../utlis/bcrypt.utlis";
+import { comparePassword, hashPassword } from "../utlis/bcrypt.utlis";
 import AppError from "../utlis/appError.utlis";
 import sendResponse from "../utlis/sendResponse.utlis";
+import { catchAsync } from "../utlis/catchAsync.utlis";
+import { generateJwtToken } from "../utlis/jwt.utlis";
+import ENV_CONFIG from "../config/env.config";
 
 //register
-export const register = async (req: Request, res: Response, next: NextFunction) => {
-    try {
+export const register = catchAsync(async(req,res)=>{
+      
         //data:fullname, email, password, role, profile_image, phone_number
         const { full_name, email, password, phone_number } = req.body;
 
@@ -72,15 +75,110 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
             message: "user registered successfully",
             data: rest
         });
-    } catch(error){
-        next(error);
-    }
-
-}
+    });
 
 //login
+export const login = catchAsync(async(req,res)=>{
+    
+        const{email,password}=req.body;
+        if(!email)
+        {
+            throw new AppError("email is required",400);
+        }
+        if(!password)
+        {
+            throw new AppError("password is required",400);
+        }
+
+        //find user by email
+        const user= await User.findOne({email}).select("+password");
+
+        //if user not found
+        if(!user)
+        {
+            throw new AppError("Invalid email or password",400);
+        }
+
+        //compare password
+        const isPasswordMatched= await comparePassword(password,user.password);
+        if(!isPasswordMatched)
+        {
+            throw new AppError("Invalid email or password",400);
+        }
+
+        //to do: generate jwt (json web token) and send it to client
+        const access_token= generateJwtToken({
+            _id:user._id,
+            role:user.role,
+            email:user.email
+        });
+
+
+        //dont send password in response
+        const{password:_,...rest}=user.toObject();
+
+        //set cookie header
+        res.cookie("access_token", access_token, {
+            secure:ENV_CONFIG.NODE_ENV === "production",
+            httpOnly:ENV_CONFIG.NODE_ENV === "production",
+           expires: new Date(Date.now() + Number(ENV_CONFIG.COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000),
+           sameSite:ENV_CONFIG.NODE_ENV === "development" ? "lax" : "none",
+           
+        });
+
+        //send response
+        sendResponse(res,{
+            message:"user logged in successfully",
+            data:{
+                user:rest,
+                access_token
+            },
+            statusCode:201
+        });
+
+
+    });
+
+   
+
 
 //change password
+export const changePassword = catchAsync(async(req,res)=>
+{
+    const {oldPassword,newPassword,id}=req.body;
+
+    if(!newPassword)
+    {
+        throw new AppError("new password is required",400);
+    }
+    if(!oldPassword)
+    {
+        throw new AppError("old password is required",400);
+    }
+   const user= await User.findById(id).select("+password");
+   if(!user)
+   {
+    throw new AppError("user not found",404);
+   }
+
+   //check old password is correct or not
+   const isPasswordMatched= await comparePassword(oldPassword,user.password);
+    if(!isPasswordMatched)
+    {
+        throw new AppError("old password is incorrect",400);
+    }
+
+    //hash new password
+    const hash = await hashPassword(newPassword);
+    user.password= hash;
+    await user.save();
+
+    sendResponse(res,{
+        message:"password changed successfully",
+        data:null,
+        statusCode:200
+    });
+});
 
 //forgot password
 

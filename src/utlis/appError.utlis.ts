@@ -3,12 +3,15 @@ class AppError extends Error
 {
     public status:"error" | "fail";
     public success:boolean;
-    constructor(public message:string, public statusCode:number)
+    public details?:{message:string, path:string}[];
+    constructor(public message:string, public statusCode:number, details?:{message:string, path:string}[])
     {
         //super is used to call the constructor of parent class error
         super(message);
         this.statusCode=statusCode;
-        this.status=statusCode>=200 && statusCode<300 ? 'fail':'error';
+        this.details=details;
+
+        this.status= String(statusCode).startsWith("4") ? "fail" : "error";
         this.success=false;
         Error.captureStackTrace(this,AppError);
     }
