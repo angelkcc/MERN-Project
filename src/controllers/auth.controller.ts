@@ -6,12 +6,14 @@ import sendResponse from "../utlis/sendResponse.utlis";
 import { catchAsync } from "../utlis/catchAsync.utlis";
 import { generateJwtToken } from "../utlis/jwt.utlis";
 import ENV_CONFIG from "../config/env.config";
+import { uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
 
 //register
 export const register = catchAsync(async(req,res)=>{
       
         //data:fullname, email, password, role, profile_image, phone_number
         const { full_name, email, password, phone_number } = req.body;
+        const file = req.file; //multer will add file property to request object if file is uploaded
 
         if(!full_name)
         {
@@ -53,6 +55,10 @@ export const register = catchAsync(async(req,res)=>{
         user.password = hash; //set hashed password to user instance
 
         //upload profile image 
+        if (file) {
+            const uploadedFile = await uploadFileToCloudinary(file, "/users");
+            user.profile_image = uploadedFile.path;
+}
 
         //save user to database
         await user.save(); //this method called as save will save the user instance to database and it will return a promise

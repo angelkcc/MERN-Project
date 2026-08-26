@@ -3,7 +3,7 @@ import authRoutes from "./auth.routes";
 import categoryRoutes from "./category.routes";
 const router = express.Router();
 //* using routes
-router.use('/api/v1/auth', authRoutes);
-router.use('/api/v1/categories', categoryRoutes);
+router.use('/auth', authRoutes);
+router.use('/categories', categoryRoutes);
 
 export default router;

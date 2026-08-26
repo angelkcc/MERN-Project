@@ -6,7 +6,10 @@ import mongoose, { Document } from "mongoose";
 interface ICategoryDocument extends Document {
     name:string;
     description:string;
-    image:string;
+    image:{
+        path:string;
+        public_id:string;
+    }
 }
 mongoose.Types.ObjectId.isValid('')
 //schema
@@ -26,8 +29,16 @@ const categorySchema= new mongoose.Schema<ICategoryDocument>
         trim:true,
     },
     image:{
-        type:String,
-        required:[true,"category image is required"],
+        type:{
+            path:{
+                type:String,
+                required:[true,"category image path is required"],
+            },
+            public_id:{
+                type:String,
+                required:[true,"category image public_id is required"],
+        },
+        },
     },
 }
  , { timestamps: true });

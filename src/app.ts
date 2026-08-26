@@ -14,6 +14,8 @@ const app = express();
 
 //* using middlewares
 app.use(express.json({ limit: "10mb" }));
+//for static files
+app.use("/api/v1/uploads", express.static("uploads"));
 
 //* health check route
 app.get("/", (_: Request, res: Response) => {
@@ -26,7 +28,7 @@ app.get("/", (_: Request, res: Response) => {
 });
 
 //using routes
-app.use("/api/v1", routes);
+app.use("/api/v1/", routes);
 
 //* path not found
 app.use((req: Request, _: Response, next: NextFunction) => {

@@ -1,37 +1,26 @@
-import express, { Request } from "express";
-import { changePassword, login, register } from "../controllers/auth.controller";
+import express from "express";
+import {
+  changePassword,
+  login,
+  register,
+} from "../controllers/auth.controller";
 import { validate } from "../middlewares/validator.middleware";
 import { loginValidatorSchema } from "../validators/auth.validator";
-import multer from "multer";
+import multerFileUploader from "../middlewares/multer.middleware";
 
-const folder= "uploads/";
-const storage = multer.diskStorage({
-    destination: (req:Request, file:Express.Multer.File, cb)=>{
-        cb(null, folder);
-    },
-    filename:(req: Request, file:Express.Multer.File,cb)=>{
-        const fileName= Date.now()+ "-" +file.originalname;
-        cb(null, fileName);
-    },
-});
+//* express route
+const router = express.Router();
 
+//* multer uploader
+const upload = multerFileUploader();
 
-const upload= multer(
-    {
-        storage:storage,
-    });
-    
-const router=express.Router();
-//register route
-router.post('/register', upload.single("profile_image"), register);
+//* register user
+router.post("/register", upload.single("profile_image"), register);
 
-//login route
+//* login
+router.post("/login", validate(loginValidatorSchema), login);
 
-router.post('/login',validate(loginValidatorSchema), login);
-
-//change password route
-
-router.put('/change-password',changePassword);
-
+//* change password
+router.put("/password", changePassword);
 
 export default router;

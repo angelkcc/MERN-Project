@@ -1,6 +1,7 @@
 import Category from "../models/category.model";
 import AppError from "../utlis/appError.utlis";
 import { catchAsync } from "../utlis/catchAsync.utlis";
+import { uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
 import sendResponse from "../utlis/sendResponse.utlis";
 
 //* get all
@@ -36,10 +37,23 @@ export const getById = catchAsync(async (req, res) => {
 //* create
 export const create = catchAsync(async (req, res) => {
   const { name, description } = req.body;
+  const file = req.file;
+
+  if(!file)
+  {
+    throw new AppError("category image is required", 400);
+  }
 
   const category = new Category({ name, description });
+  const folder = "/categories";
 
-  //todo: upload image
+  //todo: upload image using cloudinary
+  const {path, public_id}= await uploadFileToCloudinary(file, folder);
+  category.image={
+    path,
+    public_id,
+  }
+  
 
   //* save category
   await category.save();

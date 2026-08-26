@@ -1,0 +1,1 @@
+//name description price brand category cover_iamge(1) multiple images
