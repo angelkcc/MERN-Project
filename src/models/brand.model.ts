@@ -2,6 +2,7 @@
 
 
 import mongoose, { Document } from "mongoose";
+import imageSchema from "./image.model";
 
 //interface
 interface IBrandDocument extends Document {
@@ -31,14 +32,9 @@ const brandSchema= new mongoose.Schema<IBrandDocument>
         trim:true,
     },
     logo: {
-    path: {
-        type: String,
-        required: [true, "brand logo path is required"],
-    },
-    public_id: {
-        type: String,
-        required: [true, "brand logo public id is required"],
-    },
+        type: imageSchema,
+        required:[true,"brand image is required"],
+        default: null,
 },
 }
  , { timestamps: true });
