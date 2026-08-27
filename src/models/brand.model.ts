@@ -7,7 +7,10 @@ import mongoose, { Document } from "mongoose";
 interface IBrandDocument extends Document {
     name:string;
     description:string;
-    logo:string;
+    logo: {
+     path: string;
+     public_id: string;
+};
 }
 
 //schema
@@ -18,6 +21,7 @@ const brandSchema= new mongoose.Schema<IBrandDocument>
         required:[true,"brand name is required"],
         unique:[true,"brand name must be unique"],
         minlength:[3,"brand name must be at least 3 characters"],
+        trim:true,
 
     },
     description:{
@@ -26,10 +30,16 @@ const brandSchema= new mongoose.Schema<IBrandDocument>
         minlength:[10,"brand description must be at least 10 characters"],
         trim:true,
     },
-    logo:{
-        type:String,
-        required:[true,"brand logo is required"],
+    logo: {
+    path: {
+        type: String,
+        required: [true, "brand logo path is required"],
     },
+    public_id: {
+        type: String,
+        required: [true, "brand logo public id is required"],
+    },
+},
 }
  , { timestamps: true });
 

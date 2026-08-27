@@ -7,7 +7,7 @@ import {
   update,
 } from "../controllers/category.controllers";
 import { validate } from "../middlewares/validator.middleware";
-import { createCategoryValidator } from "../validators/category.validator";
+import { createCategoryValidator, updateCategoryValidator } from "../validators/category.validator";
 import multerFileUploader from "../middlewares/multer.middleware";
 
 const router = express.Router();
@@ -28,7 +28,7 @@ router.post(
 );
 
 //* update
-router.put("/", upload.single("image"), update);
+router.put("/:id ", upload.single("image"),validate(updateCategoryValidator), update);
 
 //* delete
 router.delete("/", remove);

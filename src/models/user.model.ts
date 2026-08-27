@@ -1,12 +1,14 @@
 import mongoose, { Document } from "mongoose";
 import { Role } from "../types/enum.types";
+import imageSchema from "./image.model";
+import { IImage } from "../types/global.types";
 
 interface IUser extends Document {
   full_name: string;
   email: string;
   password: string;
   role: Role;
-  profile_image?: string;
+  profile_image?: IImage;
   phone_number?: string;
 }
 
@@ -34,7 +36,8 @@ const userSchema = new mongoose.Schema<IUser>({
     default: Role.USER,
   },
   profile_image: {
-    type: String,
+    type: imageSchema,
+    default: null,
   },
   phone_number: {
     type: String,

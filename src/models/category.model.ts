@@ -1,15 +1,14 @@
 //name description, image
 
 import mongoose, { Document } from "mongoose";
+import imageSchema from "./image.model";
+import { IImage } from "../types/global.types";
 
 //interface
 interface ICategoryDocument extends Document {
     name:string;
     description:string;
-    image:{
-        path:string;
-        public_id:string;
-    }
+    image:IImage;
 }
 mongoose.Types.ObjectId.isValid('')
 //schema
@@ -29,19 +28,12 @@ const categorySchema= new mongoose.Schema<ICategoryDocument>
         trim:true,
     },
     image:{
-        type:{
-            path:{
-                type:String,
-                required:[true,"category image path is required"],
-            },
-            public_id:{
-                type:String,
-                required:[true,"category image public_id is required"],
-        },
-        },
+        type: imageSchema,
+        required:[true,"category image is required"],
+        default: null,
     },
-}
- , { timestamps: true });
+    },
+  { timestamps: true });
 
  //model
  const Category = mongoose.model<ICategoryDocument>("Category", categorySchema);

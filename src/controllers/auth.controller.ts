@@ -55,10 +55,15 @@ export const register = catchAsync(async(req,res)=>{
         user.password = hash; //set hashed password to user instance
 
         //upload profile image 
-        if (file) {
-            const uploadedFile = await uploadFileToCloudinary(file, "/users");
-            user.profile_image = uploadedFile.path;
-}
+            const folder = "/users";
+            if(file){
+            const {path, public_id}= await uploadFileToCloudinary(file, folder);
+            user.profile_image={
+                path,
+                public_id,
+            }
+        }
+  
 
         //save user to database
         await user.save(); //this method called as save will save the user instance to database and it will return a promise

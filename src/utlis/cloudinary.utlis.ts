@@ -34,3 +34,13 @@ export const uploadFileToCloudinary = async (
 };
 
 //* delete
+export const deleteFileFromCloudinary = async (public_id: string) => {
+  try {
+    const deletedfile = await cloudinary.uploader.destroy(public_id);
+    console.log(deletedfile);
+    return true;
+  } catch (error) {
+    console.log(error);
+    throw new AppError("Something went wrong", 400);
+  }
+};
