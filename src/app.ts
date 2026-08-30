@@ -1,5 +1,6 @@
 import express, { NextFunction, Request, Response } from "express";
 import errorHandler from "./middlewares/errorHandler.middleware";
+import cookieParser from "cookie-parser";
 
 //importing routes
 import routes from "./routes/index";
@@ -13,6 +14,8 @@ import AppError from "./utlis/appError.utlis";
 const app = express();
 
 //* using middlewares
+app.use(cookieParser()); //this parser parses the cookie from request and adds it to req.cookies object
+//also parser makes key value pair of cookie
 app.use(express.json({ limit: "10mb" }));
 //for static files
 app.use("/api/v1/uploads", express.static("uploads"));

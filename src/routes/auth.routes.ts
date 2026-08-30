@@ -7,6 +7,7 @@ import {
 import { validate } from "../middlewares/validator.middleware";
 import { loginValidatorSchema } from "../validators/auth.validator";
 import multerFileUploader from "../middlewares/multer.middleware";
+import { authenticate } from "../middlewares/auth.middleware";
 
 //* express route
 const router = express.Router();
@@ -21,6 +22,6 @@ router.post("/register", upload.single("profile_image"), register);
 router.post("/login", validate(loginValidatorSchema), login);
 
 //* change password
-router.put("/password", changePassword);
+router.put("/password",authenticate(), changePassword);
 
 export default router;

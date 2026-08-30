@@ -130,9 +130,10 @@ export const login = catchAsync(async(req,res)=>{
 
         //set cookie header
         res.cookie("access_token", access_token, {
-            secure:ENV_CONFIG.NODE_ENV === "production",
-            httpOnly:ENV_CONFIG.NODE_ENV === "production",
-           expires: new Date(Date.now() + Number(ENV_CONFIG.COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000),
+            secure:ENV_CONFIG.NODE_ENV === "development" ? false : true,
+            httpOnly:ENV_CONFIG.NODE_ENV === "development" ? false : true,
+          // expires: new Date(Date.now() + Number(ENV_CONFIG.COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000),
+          maxAge:ENV_CONFIG.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000, //cookie will expire in 7 days
            sameSite:ENV_CONFIG.NODE_ENV === "development" ? "lax" : "none",
            
         });
@@ -190,6 +191,12 @@ export const changePassword = catchAsync(async(req,res)=>
         statusCode:200
     });
 });
+//LOGOUT
+
+
+//GET PROFILE
+
+
 
 //forgot password
 
