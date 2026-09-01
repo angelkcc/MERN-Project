@@ -37,113 +37,188 @@ export const getById= catchAsync(async(req,res)=>{
 
 //create
 export const create = catchAsync(async (req, res) => {
-  const { name, description, price, stock, category, brand} = req.body;
+  const { cover_image, images } = req.files as {
+    cover_image: Express.Multer.File[];
+    images: Express.Multer.File[];
+  };
+  const {
+    name,
+    description,
+    price,
+    stock,
+    category,
+    brand,
+    is_featured,
+    new_arrival,
+  } = req.body;
 
-    const files = req.files as { [fieldname: string]: Express.Multer.File[];
-    };
+  if (!cover_image[0]) {
+    throw new AppError("cover image is required", 400);
+  }
 
-    // get cover image
-    const coverImageFile = files?.cover_image?.[0];
+  if (!images || images.length < 2) {
+    throw new AppError("at least 2 images required", 400);
+  }
 
-    // get other images
-    const imageFiles = files?.images || [];
+  const product = new Product({
+    name,
+    description,
+    price,
+    stock,
+    category,
+    brand,
+    is_featured,
+    new_arrival,
+  });
 
-    // cover image is required
-    if (!coverImageFile) {
-        throw new AppError("product cover image is required", 400);
-    }
+  const { path, public_id } = await uploadFileToCloudinary(
+    cover_image[0],
+    folder,
+  );
 
-    // other images are required
-    if (imageFiles.length === 0) {
-        throw new AppError("product images are required", 400);
-    }
+  product.cover_image = {
+    path,
+    public_id,
+  };
 
-    // create product
-    const product = new Product({name,description,price,stock,category,brand,
-    });
+  // Promise.all(promise[]) ->
+  // Promise.allSettled(promise[]) ->
 
-    
+  //* upload images
+  const promises = images.map((file) => uploadFileToCloudinary(file, folder));
+  const settledPromises = await Promise.allSettled(promises); // [{status:'fulfilled',value:{}}]
+  const files = settledPromises
+    .filter((file) => file.status === "fulfilled")
+    .map((file) => file.value);
 
-    // upload cover image
-    const cover = await uploadFileToCloudinary(coverImageFile, folder);
+  product.images = files;
 
-    product.cover_image = {
-        path: cover.path,
-        public_id: cover.public_id,
-    };
+  await product.save();
 
-    //promise.all(promise[])-> all promises are resolved or rejected, if any promise is rejected, the whole promise.all is rejected
-    //promise.allSettled(promise[])-> all promises are resolved or rejected, but it returns the result of all promises, even if some are rejected
-    //promise.race(promise[])-> returns the result of the first promise that is resolved or rejected
-    //promise.any(promise[])-> returns the result of the first promise that is resolved, if all promises are rejected, it throws an error
-
-    // upload multiple images
-    const uploadedImages = await Promise.all(
-        imageFiles.map(async (file) => {
-            const image = await uploadFileToCloudinary(
-                file,
-                folder
-            );
-
-            return {
-                path: image.path,
-                public_id: image.public_id,
-            };
-        })
-    );
-
-    product.images = uploadedImages;
-
-    // save product
-    await product.save();
-
-    sendResponse(res, {
-        message: "product created",
-        data: product,
-        statusCode: 201,
-    });
+  //* send success response
+  sendResponse(res, {
+    message: "product created",
+    data: product,
+    statusCode: 201,
+  });
 });
-
+//update
 //update
 export const update = catchAsync(async (req, res) => {
-    const { id } = req.params;
-    const{cover_image,images} = req.files as {
-        cover_image:Express.Multer.File[];
-        images:Express.Multer.File[];
-    };
-    const { name, description, price, stock, category, brand,is_featured,new_arrival,deleted_images } = req.body;
-    //suppose the user wants to keep 2 images as is and wants to delete the rest 
+  const { id } = req.params;
 
-    const product = await Product.findOne({ _id: id });
-    
+  const { cover_image, images } = req.files as {
+    cover_image: Express.Multer.File[];
+    images: Express.Multer.File[];
+  };
+
+  const {
+    name,
+    description,
+    price,
+    stock,
+    category,
+    brand,
+    is_featured,
+    new_arrival,
+    deleted_images,
+  } = req.body;
+
+  // find product
+  const product = await Product.findOne({ _id: id });
+
+  if (!product) {
+    throw new AppError("product not found", 404);
+  }
+
+  // update normal fields
+  if (name) product.name = name;
+  if (description) product.description = description;
+  if (price) product.price = price;
+  if (stock) product.stock = stock;
+  if (category) product.category = category;
+  if (brand) product.brand = brand;
+  if (is_featured) product.is_featured = is_featured;
+  if (new_arrival) product.new_arrival = new_arrival;
+
+  // update cover image
+  if (cover_image && cover_image[0]) {
+    await deleteFileFromCloudinary(product.cover_image.public_id);
+
+    const { path, public_id } = await uploadFileToCloudinary(
+      cover_image[0],
+      folder,
+    );
+
+    product.cover_image = {
+      path,
+      public_id,
+    };
+  }
+
+  // delete images
+  if (
+    deleted_images &&
+    Array.isArray(deleted_images) &&
+    deleted_images.length > 0
+  ) {
+    await Promise.allSettled(
+      deleted_images.map(async (public_id) => {
+        await deleteFileFromCloudinary(public_id);
+      }),
+    );
+
+    const oldImages = product.images.filter(
+      (image) => !deleted_images.includes(image.public_id),
+    );
+
+    product.images = oldImages;
+  }
+
+  // upload new images
+  if (images && images.length > 0) {
+    const files = (
+      await Promise.allSettled(
+        images.map((image) => uploadFileToCloudinary(image, folder)),
+      )
+    )
+      .filter((file) => file.status === "fulfilled")
+      .map((file) => file.value);
+
+    product.images = [...product.images, ...files];
+  }
+
+  await product.save();
+
+  sendResponse(res, {
+    message: "product updated",
+    data: product,
+    statusCode: 200,
+  });
+});
+
+//delete
+export const deleteProduct = catchAsync(async (req, res) => {
+    const { id } = req.params;
+
+    const product = await Product.findByIdAndDelete(id);
 
     if (!product) {
         throw new AppError("product not found", 404);
     }
-    if(name)product.name=name;
-    if(description)product.description=description;
-    if(price)product.price=price;
-    if(stock)product.stock=stock;
-    if(category)product.category=category;
-    if(brand)product.brand=brand;
-    if(is_featured)product.is_featured=is_featured;
-    if(new_arrival)product.new_arrival=new_arrival;
+    await deleteFileFromCloudinary(product.cover_image.public_id);
+    await Promise.allSettled(
+        product.images.map(async (image) => {
+            await deleteFileFromCloudinary(image.public_id);
+        })
+    );
 
-    // update cover image
-    if(cover_image[0]){
-        await deleteFileFromCloudinary(product.cover_image.public_id);
-        const{path, public_id}= await uploadFileToCloudinary(cover_image[0],folder);
-        product.cover_image={path,public_id};
-    }
     sendResponse(res, {
-        message: "product updated",
+        message: "product deleted",
         data: product,
         statusCode: 200,
     });
 });
-
-//delete
-
 
 //get product by category
 
