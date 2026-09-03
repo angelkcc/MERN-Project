@@ -19,5 +19,9 @@ const server = http.createServer(app);
 server.listen(PORT, () => {
   console.log(`server is running at http://localhost${PORT}`);
   verifySmtpConnection();
-  sendEmail();
+  sendEmail({
+    to: "",
+    subject: "Test Email",
+    html: "<h1>Test Email</h1><p>This is a test email sent from the server.</p>",
+  });
 });

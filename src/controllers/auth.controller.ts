@@ -7,6 +7,8 @@ import { catchAsync } from "../utlis/catchAsync.utlis";
 import { generateJwtToken } from "../utlis/jwt.utlis";
 import ENV_CONFIG from "../config/env.config";
 import { uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
+import { sendEmail } from "../utlis/sendEmail.utlis";
+import { generateAccountCreatedHtml, generateLoginDetectedHtml } from "../utlis/emailTemplate";
 
 //register
 export const register = catchAsync(async(req,res)=>{
@@ -72,7 +74,11 @@ export const register = catchAsync(async(req,res)=>{
         const {password:_, ...rest}=user.toObject(); //toObject method will convert mongoose document to 
         //plain javascript object and we are using destructuring to exclude password from response
 
-
+         await sendEmail({
+            to:user.email,
+            subject:"Login Notification",
+            html:generateAccountCreatedHtml()
+        });
 
         //send response
         /*res.status(201).json({
@@ -127,6 +133,15 @@ export const login = catchAsync(async(req,res)=>{
 
         //dont send password in response
         const{password:_,...rest}=user.toObject();
+
+       
+
+        //new email detected
+        sendEmail({
+            to:user.email,
+            subject:"New Login Detected",
+            html:generateLoginDetectedHtml()
+        });
 
         //set cookie header
         res.cookie("access_token", access_token, {
