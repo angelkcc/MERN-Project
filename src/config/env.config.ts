@@ -13,7 +13,12 @@ const ENV_CONFIG={
     COOKIE_EXPIRES_IN:Number(process.env.COOKIE_EXPIRES_IN) || 7,
 
     //NODE MAILER
-
+    SMTP_HOST: process.env.SMTP_HOST!!,
+    SMTP_PORT:Number(process.env.SMTP_PORT) || 465,
+    SMTP_SERVICE: process.env.SMTP_SERVICE!!,
+    SMTP_USER: process.env.SMTP_USER!!,
+    SMTP_PASS: process.env.SMTP_PASS!!,
+    SMTP_MAIL_FROM: process.env.SMTP_MAIL_FROM!!,
 
     //CLOUDINARY
      CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME!!,

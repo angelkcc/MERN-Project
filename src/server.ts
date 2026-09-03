@@ -3,6 +3,7 @@ import app from "./app";
 import http from "http";
 import connectDatabase from "./config/db.config";
 import ENV_CONFIG from "./config/env.config";
+import { verifySmtpConnection } from "./config/nodemailer.config";
 
 const PORT = ENV_CONFIG.PORT || 8080;
 const DB_URI = ENV_CONFIG.DB_URI || "";
@@ -16,4 +17,5 @@ const server = http.createServer(app);
 //* listen
 server.listen(PORT, () => {
   console.log(`server is running at http://localhost${PORT}`);
+  verifySmtpConnection();
 });
