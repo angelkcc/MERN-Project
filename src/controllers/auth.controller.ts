@@ -158,6 +158,7 @@ export const login = catchAsync(async(req,res)=>{
 export const changePassword = catchAsync(async(req,res)=>
 {
     const {oldPassword,newPassword,id}=req.body;
+    
 
     if(!newPassword)
     {
