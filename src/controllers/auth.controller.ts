@@ -193,11 +193,37 @@ export const changePassword = catchAsync(async(req,res)=>
     });
 });
 //LOGOUT
+export const logout = catchAsync(async (req, res) => {
+
+    res.clearCookie("access_token", {
+        secure: ENV_CONFIG.NODE_ENV === "development" ? false : true,
+        httpOnly: ENV_CONFIG.NODE_ENV === "development" ? false : true,
+        sameSite: ENV_CONFIG.NODE_ENV === "development" ? "lax" : "none",
+    });
+
+    sendResponse(res, {
+        message: "user logged out successfully",
+        data: null,
+        statusCode: 200,
+    });
+});
 
 
 //GET PROFILE
 
+export const getProfile= catchAsync(async(req,res)=>{
+    const {_id}= req.user;
 
+    const profile= await User.findOne({_id});
+
+    if(!profile) throw new AppError("user not found",404);
+
+    sendResponse(res,{
+        message:"user profile fetched successfully",
+        data:profile,
+        statusCode:200
+    });
+});
 
 //forgot password
 

@@ -8,6 +8,8 @@ import { validate } from "../middlewares/validator.middleware";
 import { loginValidatorSchema } from "../validators/auth.validator";
 import multerFileUploader from "../middlewares/multer.middleware";
 import { authenticate } from "../middlewares/auth.middleware";
+import {logout} from "../controllers/auth.controller";
+import { getProfile } from "../controllers/user.controller";
 
 //* express route
 const router = express.Router();
@@ -23,5 +25,11 @@ router.post("/login", validate(loginValidatorSchema), login);
 
 //* change password
 router.put("/password",authenticate(), changePassword);
+
+//* logout
+router.post("/logout",authenticate(),logout);
+
+//get profile
+router.get("/profile", authenticate(), getProfile);
 
 export default router;
