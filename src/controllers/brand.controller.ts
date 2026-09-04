@@ -10,8 +10,33 @@ import sendResponse from "../utlis/sendResponse.utlis";
 const folder = "/brands";
 //get all  
 export const getAll= catchAsync(async(req,res)=>{
-    const filter={};
+    const filter:any={};
+    const {query}=req.query;
+    if(query)
+  {
+   /* filter.name= {
+      $regex: query,
+      options: "i", // case-insensitive
+    };*/
+    //or query
+    filter.$or=[
+      {
+        name:{
+          $regex: query,
+          $options: "i",
+        },
+        description:{
+          $regex: query,
+          $options: "i",
+      },
+    },
+    ];
+  }
+
+  
+    //date range
     const brands = await Brand.find(filter);
+
 
     //send response
     sendResponse(res,{

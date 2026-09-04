@@ -1,3 +1,5 @@
+
+
 import Category from "../models/category.model";
 import AppError from "../utlis/appError.utlis";
 import { catchAsync } from "../utlis/catchAsync.utlis";
@@ -7,8 +9,29 @@ import sendResponse from "../utlis/sendResponse.utlis";
 //* get all
 const folder = "/categories";
 export const getAll = catchAsync(async (req, res) => {
-  const filter = {};
+  const filter:any = {};
+  const {query}=req.query;
 
+  if(query)
+  {
+   /* filter.name= {
+      $regex: query,
+      options: "i", // case-insensitive
+    };*/
+    //or query
+    filter.$or=[
+      {
+        name:{
+          $regex: query,
+          $options: "i",
+        },
+        description:{
+          $regex: query,
+          $options: "i",
+      },
+    },
+    ];
+  }
   const categories = await Category.find(filter);
   
 

@@ -6,7 +6,7 @@ import sendResponse from "../utlis/sendResponse.utlis";
 import { catchAsync } from "../utlis/catchAsync.utlis";
 import { generateJwtToken } from "../utlis/jwt.utlis";
 import ENV_CONFIG from "../config/env.config";
-import { uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
+import { deleteFileFromCloudinary, uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
 import { sendEmail } from "../utlis/sendEmail.utlis";
 import { generateAccountCreatedHtml, generateLoginDetectedHtml } from "../utlis/emailTemplate";
 
@@ -79,11 +79,16 @@ export const register = catchAsync(async(req,res)=>{
         const {password:_, ...rest}=user.toObject(); //toObject method will convert mongoose document to 
         //plain javascript object and we are using destructuring to exclude password from response
 
-         await sendEmail({
-            to:user.email,
-            subject:"Login Notification",
-            html:generateAccountCreatedHtml(user.full_name)
-        });
+           await sendEmail({
+              to: user.email,
+              subject: "Account Created",
+               html: generateAccountCreatedHtml({
+               full_name: user.full_name,
+               email: user.email,
+               created_at: new Date(Date.now()),
+               user_agent: req.headers["user-agent"],
+             }),
+            });
 
         //send response
         /*res.status(201).json({
@@ -143,10 +148,15 @@ export const login = catchAsync(async(req,res)=>{
 
         //new email detected
         sendEmail({
-            to:user.email,
-            subject:"New Login Detected",
-            html:generateLoginDetectedHtml(user.full_name)
-        });
+           to: user.email,
+           subject: "New Login Detected",
+           html: generateLoginDetectedHtml({
+           full_name: user.full_name,
+           email: user.email,
+           logged_in_at: new Date(Date.now()),
+           user_agent: req.headers["user-agent"],
+    }),
+  });
 
         //set cookie header
         res.cookie("access_token", access_token, {
@@ -279,4 +289,35 @@ export const changeEmail= catchAsync(async(req,res)=>{
 );
 
 //update profile image
+export const changeProfileImage = catchAsync(async (req, res) => {
+  const { _id } = req.user;
+  const file = req.file;
+  if (!file) throw new AppError("image is required", 400);
+
+  const user = await User.findById(_id);
+
+  if (!user) throw new AppError("profile not found", 400);
+
+  const { public_id, path } = await uploadFileToCloudinary(
+    file,
+    "/profile_images",
+  );
+
+  if (user.profile_image) {
+    await deleteFileFromCloudinary(user.profile_image?.public_id);
+  }
+
+  user.profile_image = {
+    public_id,
+    path,
+  };
+
+  await user.save();
+
+  sendResponse(res, {
+    message: "profile updated",
+    data: user,
+    statusCode: 200,
+  });
+});
 

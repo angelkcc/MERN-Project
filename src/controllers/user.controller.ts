@@ -11,7 +11,7 @@ import sendResponse from "../utlis/sendResponse.utlis";
 const folder = "/profile_images";
 
 
-//* GET ALL USERS
+//* GET ALL USERS: only admin can access this route
 export const getAll = catchAsync(async (req, res) => {
   const users = await User.find({});
 
@@ -137,3 +137,5 @@ export const removeProfile = catchAsync(async (req, res) => {
     statusCode: 200,
   });
 });
+
+//deactivate user account-- only admin

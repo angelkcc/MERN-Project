@@ -9,6 +9,57 @@ import sendResponse from "../utlis/sendResponse.utlis";
 
 //get all
 export const getAll= catchAsync(async(req,res)=>{
+   const filter:any={};
+    const {query,category,brand,minPrice, maxPrice}=req.query;
+    if(query)
+  {
+   /* filter.name= {
+      $regex: query,
+      options: "i", // case-insensitive
+    };*/
+    //or query
+    filter.$or=[
+      {
+        name:{
+          $regex: query,
+          $options: "i",
+        },
+        description:{
+          $regex: query,
+          $options: "i",
+      },
+    },
+    ];
+  }
+  if(category){
+    filter.category=category;
+  }
+  if(brand){
+    filter.brand=brand;
+  }
+  //price range filter
+  if(minPrice || maxPrice){
+    const floor =Number(minPrice);
+    const ceil= Number(maxPrice);
+    if(ceil && floor){
+      filter.price={
+        $gte:floor,
+        $lte:ceil,
+      };
+    }
+
+    if(floor){
+      filter.price={
+        $gte:floor, //greater than or equal to
+      };
+    }
+    if(ceil){
+      filter.price={
+        $lte:ceil, //less than or equal to
+      };
+    }
+}
+
     const products= await Product.find({});
 
     sendResponse(res,{
