@@ -44,6 +44,10 @@ export const register = catchAsync(async(req,res)=>{
             throw error;*/
             throw new AppError("password is required",400);
         }
+         if(password.length<6)
+        {
+            throw new AppError("password must be at least 6 characters long",400);
+        }
 
         //create user instance--instance is created because of mongoose model and it is not saved in database yet
         const user = new User({
@@ -52,6 +56,7 @@ export const register = catchAsync(async(req,res)=>{
             password,
             phone_number
         });
+       
         //hash password before saving to database
         const hash = await hashPassword(password);
         user.password = hash; //set hashed password to user instance
@@ -77,7 +82,7 @@ export const register = catchAsync(async(req,res)=>{
          await sendEmail({
             to:user.email,
             subject:"Login Notification",
-            html:generateAccountCreatedHtml()
+            html:generateAccountCreatedHtml(user.full_name)
         });
 
         //send response
@@ -140,7 +145,7 @@ export const login = catchAsync(async(req,res)=>{
         sendEmail({
             to:user.email,
             subject:"New Login Detected",
-            html:generateLoginDetectedHtml()
+            html:generateLoginDetectedHtml(user.full_name)
         });
 
         //set cookie header
@@ -244,6 +249,34 @@ export const getProfile= catchAsync(async(req,res)=>{
 
 
 //change email
+export const changeEmail= catchAsync(async(req,res)=>{
+    const {_id}= req.user;
+    const {email}= req.body;
+    if(!email)
+    {
+        throw new AppError("email is required",400);
+    }
+    const user= await User.findById(_id);
+    if(!user)
+    {
+        throw new AppError("user not found",404);
+    }
+    const existingUser= await User.findOne({
+        email:email.toLowerCase(),
+    });
+    if(existingUser)
+    {
+        throw new AppError("email already exists",400);
+    }
+    user.email=email.toLowerCase();
+    await user.save();
+    sendResponse(res,{
+        message:"email changed successfully",
+        data:null,
+        statusCode:200
+    });
+},
+);
 
 //update profile image
 

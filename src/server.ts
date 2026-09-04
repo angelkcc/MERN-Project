@@ -20,8 +20,12 @@ server.listen(PORT, () => {
   console.log(`server is running at http://localhost${PORT}`);
   verifySmtpConnection();
   sendEmail({
-    to: "",
-    subject: "Test Email",
-    html: "<h1>Test Email</h1><p>This is a test email sent from the server.</p>",
-  });
+  to: "angelkhatriii777@gmail.com",
+  subject: "Test Email",
+  html: `
+    <h1>Test Email</h1>
+    <p>This is a test email sent from my MERN backend.</p>
+    <p>If you can see this, Nodemailer is working! 🎉</p>
+  `,
+});
 });

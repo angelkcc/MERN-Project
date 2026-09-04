@@ -1,11 +1,12 @@
 import express from "express";
 import {
+  changeEmail,
   changePassword,
   login,
   register,
 } from "../controllers/auth.controller";
 import { validate } from "../middlewares/validator.middleware";
-import { loginValidatorSchema } from "../validators/auth.validator";
+import { loginValidatorSchema, registerValidatorSchema } from "../validators/auth.validator";
 import multerFileUploader from "../middlewares/multer.middleware";
 import { authenticate } from "../middlewares/auth.middleware";
 import {logout} from "../controllers/auth.controller";
@@ -18,7 +19,7 @@ const router = express.Router();
 const upload = multerFileUploader();
 
 //* register user
-router.post("/register", upload.single("profile_image"), register);
+router.post("/register", upload.single("profile_image"),validate(registerValidatorSchema), register);
 
 //* login
 router.post("/login", validate(loginValidatorSchema), login);
@@ -31,5 +32,12 @@ router.post("/logout",authenticate(),logout);
 
 //get profile
 router.get("/profile", authenticate(), getProfile);
+
+//change email
+router.put("/email", authenticate(), changeEmail);
+
+//* forgot password
+
+//reset password
 
 export default router;
