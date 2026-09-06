@@ -5,6 +5,7 @@ import Brand from "../models/brand.model";
 import AppError from "../utlis/appError.utlis";
 import { catchAsync } from "../utlis/catchAsync.utlis";
 import { deleteFileFromCloudinary, uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
+import { getPagination } from "../utlis/pagination.utlis";
 import sendResponse from "../utlis/sendResponse.utlis";
 
 const folder = "/brands";
@@ -46,24 +47,16 @@ export const getAll= catchAsync(async(req,res)=>{
   
     //date range
     const brands= await Brand.find(filter).limit(perPage).skip(skip);
-    const totalCount= await Brand.countDocuments(filter);
+    const total= await Brand.countDocuments(filter);
 
-    const totalPages= Math.ceil(totalCount/perPage);
-
-    const pagination={
-        page:currentPage,
-        limit:perPage,
-        totalPages,
-        nextPage:currentPage<totalPages?currentPage+1:null,
-        prevPage:currentPage>1?currentPage-1:null,
-        total:totalCount,
-    };
+    
 
 
     //send response
     sendResponse(res,{
         message:"brands fetched",
-        data:{brands,pagination},
+        data:{brands,
+            pagination:getPagination(currentPage,perPage,total)},
         statusCode:200,
     });
 

@@ -4,13 +4,17 @@ import Category from "../models/category.model";
 import AppError from "../utlis/appError.utlis";
 import { catchAsync } from "../utlis/catchAsync.utlis";
 import { deleteFileFromCloudinary, uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
+import { getPagination } from "../utlis/pagination.utlis";
 import sendResponse from "../utlis/sendResponse.utlis";
 
 //* get all
 const folder = "/categories";
 export const getAll = catchAsync(async (req, res) => {
   const filter:any = {};
-  const {query}=req.query;
+  const {query,page=1,limit=10}=req.query;
+    const currentPage= Number(page);
+    const perPage= Number(limit);
+    const skip= (currentPage-1)*perPage;
 
   if(query)
   {
@@ -32,13 +36,15 @@ export const getAll = catchAsync(async (req, res) => {
     },
     ];
   }
-  const categories = await Category.find(filter);
-  
+  const categories = await Category.find(filter).limit(perPage).skip(skip);
+  const total= await Category.countDocuments(filter);
+
 
   //* send success response
   sendResponse(res, {
     message: "categories fetched",
-    data: categories,
+    data: {categories,
+            pagination:getPagination(currentPage,perPage,total)},
     statusCode: 200,
   });
 });

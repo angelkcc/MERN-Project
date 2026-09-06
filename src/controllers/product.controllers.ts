@@ -2,6 +2,7 @@ import Product from "../models/product.model";
 import AppError from "../utlis/appError.utlis";
 import {catchAsync} from "../utlis/catchAsync.utlis";
 import { deleteFileFromCloudinary, uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
+import { getPagination } from "../utlis/pagination.utlis";
 import sendResponse from "../utlis/sendResponse.utlis";
 
 // folder for Cloudinary
@@ -10,7 +11,10 @@ import sendResponse from "../utlis/sendResponse.utlis";
 //get all
 export const getAll= catchAsync(async(req,res)=>{
    const filter:any={};
-    const {query,category,brand,minPrice, maxPrice}=req.query;
+    const {query,category,brand,minPrice, maxPrice,page=1,limit=10}=req.query;
+    const currentPage= Number(page);
+    const perPage= Number(limit);
+    const skip= (currentPage-1)*perPage;
     if(query)
   {
    /* filter.name= {
@@ -60,11 +64,13 @@ export const getAll= catchAsync(async(req,res)=>{
     }
 }
 
-    const products= await Product.find({});
+    const products= await Product.find(filter).limit(perPage).skip(skip);
+    const total= await Product.countDocuments(filter);
 
     sendResponse(res,{
         message:"products fetched",
-        data:products,
+        data:{products,
+            pagination:getPagination(currentPage,perPage,total)},
         statusCode:200,
     });
 });
