@@ -10,6 +10,8 @@ interface IUser extends Document {
   role: Role;
   profile_image?: IImage;
   phone_number?: string;
+  otp?: string;
+  otp_expires_at?: Date;
 }
 
 //* user schema
@@ -44,6 +46,14 @@ const userSchema = new mongoose.Schema<IUser>({
     length: [10, "Phone number must be 10 digits long"],
     default: null,
   },
+  otp: {
+  type: String,
+  default: null,
+},
+otp_expires_at: {
+  type: Date,
+  default: null,
+},
 
 }, { timestamps: true });
 

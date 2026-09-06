@@ -8,10 +8,20 @@ import { deleteFileFromCloudinary, uploadFileToCloudinary } from "../utlis/cloud
 import sendResponse from "../utlis/sendResponse.utlis";
 
 const folder = "/brands";
+//100
+//page:1-> limit:10 skip:10 data:10->90
+//page:2-> limit:10 skip:20 data:10->80
+//page:3-> limit:10 skip:30 data:10->70
+//pagination is used to limit the number of results returned in a single request. It allows clients to retrieve data in smaller chunks, improving performance and reducing the load on the server. 
+// //The skip value is calculated based on the current page and the number of items per page (limit). For example, if the current page is 2 and the limit is 10, the skip value will be (2-1)*10 = 10,
+//  meaning that the first 10 items will be skipped and the next 10 items will be returned.
 //get all  
 export const getAll= catchAsync(async(req,res)=>{
     const filter:any={};
-    const {query}=req.query;
+    const {query, page=1,limit=10}=req.query;
+    const currentPage= Number(page);
+    const perPage= Number(limit);
+    const skip= (currentPage-1)*perPage;
     if(query)
   {
    /* filter.name= {
@@ -35,13 +45,25 @@ export const getAll= catchAsync(async(req,res)=>{
 
   
     //date range
-    const brands = await Brand.find(filter);
+    const brands= await Brand.find(filter).limit(perPage).skip(skip);
+    const totalCount= await Brand.countDocuments(filter);
+
+    const totalPages= Math.ceil(totalCount/perPage);
+
+    const pagination={
+        page:currentPage,
+        limit:perPage,
+        totalPages,
+        nextPage:currentPage<totalPages?currentPage+1:null,
+        prevPage:currentPage>1?currentPage-1:null,
+        total:totalCount,
+    };
 
 
     //send response
     sendResponse(res,{
         message:"brands fetched",
-        data:brands,
+        data:{brands,pagination},
         statusCode:200,
     });
 
@@ -54,6 +76,7 @@ export const getById= catchAsync(async(req,res)=>{
     const brand = await Brand.findOne({_id:id});
 
     if(!brand) throw new AppError("brand not found",404);
+    
 
     //send response
     sendResponse(res,{

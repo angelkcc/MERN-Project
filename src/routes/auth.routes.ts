@@ -2,6 +2,7 @@ import express from "express";
 import {
   changeEmail,
   changePassword,
+  forgotPassword,
   login,
   register,
 } from "../controllers/auth.controller";
@@ -37,6 +38,10 @@ router.get("/profile", authenticate(), getProfile);
 router.put("/email", authenticate(), changeEmail);
 
 //* forgot password
+router.post(
+  "/forgot-password",
+  forgotPassword
+);
 
 //reset password
 

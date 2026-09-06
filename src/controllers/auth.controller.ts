@@ -8,7 +8,7 @@ import { generateJwtToken } from "../utlis/jwt.utlis";
 import ENV_CONFIG from "../config/env.config";
 import { deleteFileFromCloudinary, uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
 import { sendEmail } from "../utlis/sendEmail.utlis";
-import { generateAccountCreatedHtml, generateLoginDetectedHtml } from "../utlis/emailTemplate";
+import { generateAccountCreatedHtml, generateForgotPasswordHtml, generateLoginDetectedHtml } from "../utlis/emailTemplate";
 
 //register
 export const register = catchAsync(async(req,res)=>{
@@ -256,6 +256,50 @@ export const getProfile= catchAsync(async(req,res)=>{
 });
 
 //forgot password
+//forgot password
+export const forgotPassword = catchAsync(async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    throw new AppError("email is required", 400);
+  }
+
+  const user = await User.findOne({
+    email: email.toLowerCase(),
+  });
+
+  if (!user) {
+    throw new AppError("user not found", 404);
+  }
+
+  //generate 6 digit OTP
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+  //OTP expires in 10 minutes
+  const otp_expires_at = new Date(Date.now() + 10 * 60 * 1000);
+
+  //save OTP to user
+  user.otp = otp;
+  user.otp_expires_at = otp_expires_at;
+
+  await user.save();
+
+  //send OTP through email
+  await sendEmail({
+    to: user.email,
+    subject: "Password Reset OTP",
+    html: generateForgotPasswordHtml(
+      user.full_name,
+      otp
+    ),
+  });
+
+  sendResponse(res, {
+    message: "OTP sent successfully to your email",
+    data: null,
+    statusCode: 200,
+  });
+});
 
 
 //change email

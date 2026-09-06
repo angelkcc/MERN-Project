@@ -549,5 +549,92 @@ export const generateLoginDetectedHtml = ({
 };
 
 //* forgot password send otp
+export const generateForgotPasswordHtml = (
+  full_name: string,
+  otp: string
+) => {
+  const html = `
+    <div style="
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 30px;
+      background-color: #f8f9fa;
+      color: #333;
+    ">
+
+      <div style="
+        background-color: #ffffff;
+        padding: 30px;
+        border-radius: 10px;
+      ">
+
+        <h1 style="
+          color: #2c3e50;
+          margin-bottom: 20px;
+        ">
+          Password Reset Request 🔐
+        </h1>
+
+        <p>
+          Hello ${full_name},
+        </p>
+
+        <p>
+          We received a request to reset the password for your account.
+        </p>
+
+        <p>
+          Your One-Time Password (OTP) is:
+        </p>
+
+        <div style="
+          margin: 25px 0;
+          padding: 20px;
+          background-color: #f1f5f9;
+          border-radius: 8px;
+          text-align: center;
+        ">
+          <h2 style="
+            font-size: 30px;
+            letter-spacing: 8px;
+            color: #2c3e50;
+            margin: 0;
+          ">
+            ${otp}
+          </h2>
+        </div>
+
+        <p>
+          This OTP is valid for <strong>10 minutes</strong>.
+        </p>
+
+        <div style="
+          margin-top: 25px;
+          padding: 15px;
+          background-color: #fff3cd;
+          border-left: 4px solid #ffc107;
+          border-radius: 5px;
+        ">
+          <p style="margin: 0;">
+            If you did not request a password reset, you can safely
+            ignore this email. Your password will remain unchanged.
+          </p>
+        </div>
+
+        <p style="
+          margin-top: 30px;
+          color: #666;
+        ">
+          Stay safe,<br>
+          <strong>Team</strong>
+        </p>
+
+      </div>
+    </div>
+  `;
+
+  return html;
+};
 
 //* change email send otp
