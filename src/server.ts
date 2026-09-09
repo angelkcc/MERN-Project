@@ -4,7 +4,7 @@ import http from "http";
 import connectDatabase from "./config/db.config";
 import ENV_CONFIG from "./config/env.config";
 import { verifySmtpConnection } from "./config/nodemailer.config";
-import { sendEmail } from "./utlis/sendEmail.utlis";
+//import { sendEmail } from "./utlis/sendEmail.utlis";
 
 const PORT = ENV_CONFIG.PORT || 8080;
 const DB_URI = ENV_CONFIG.DB_URI || "";
@@ -19,7 +19,7 @@ const server = http.createServer(app);
 server.listen(PORT, () => {
   console.log(`server is running at http://localhost${PORT}`);
   verifySmtpConnection();
-  sendEmail({
+ /* sendEmail({
   to: "angelkhatriii777@gmail.com",
   subject: "Test Email",
   html: `
@@ -27,5 +27,5 @@ server.listen(PORT, () => {
     <p>This is a test email sent from my MERN backend.</p>
     <p>If you can see this, Nodemailer is working! 🎉</p>
   `,
-});
+});*/
 });

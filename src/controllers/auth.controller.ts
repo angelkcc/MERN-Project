@@ -9,6 +9,9 @@ import ENV_CONFIG from "../config/env.config";
 import { deleteFileFromCloudinary, uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
 import { sendEmail } from "../utlis/sendEmail.utlis";
 import { generateAccountCreatedHtml, generateForgotPasswordHtml, generateLoginDetectedHtml } from "../utlis/emailTemplate";
+import { createHash, generateOtp } from "../utlis/otp.utlis";
+import Otp from "../models/otp.model";
+import { OtpType } from "../types/enum.types";
 
 //register
 export const register = catchAsync(async(req,res)=>{
@@ -187,7 +190,8 @@ export const login = catchAsync(async(req,res)=>{
 //change password
 export const changePassword = catchAsync(async(req,res)=>
 {
-    const {oldPassword,newPassword,id}=req.body;
+    const {oldPassword,newPassword}=req.body;
+    const { _id } = req.user;
     
 
     if(!newPassword)
@@ -198,7 +202,7 @@ export const changePassword = catchAsync(async(req,res)=>
     {
         throw new AppError("old password is required",400);
     }
-   const user= await User.findById(id).select("+password");
+   const user= await User.findById(_id).select("+password");
    if(!user)
    {
     throw new AppError("user not found",404);
@@ -255,47 +259,75 @@ export const getProfile= catchAsync(async(req,res)=>{
     });
 });
 
-//forgot password
-//forgot password
+
+//forgot password (otp req +reset password)
 export const forgotPassword = catchAsync(async (req, res) => {
+
   const { email } = req.body;
 
   if (!email) {
     throw new AppError("email is required", 400);
   }
 
-  const user = await User.findOne({
+  const account = await User.findOne({
     email: email.toLowerCase(),
   });
 
-  if (!user) {
-    throw new AppError("user not found", 404);
+  if (!account) {
+    throw new AppError("account not found", 404);
   }
 
-  //generate 6 digit OTP
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  // generate OTP
+  const { otp, hash, expiry } = generateOtp();
 
-  //OTP expires in 10 minutes
-  const otp_expires_at = new Date(Date.now() + 10 * 60 * 1000);
+  // save OTP
+  await Otp.create({
+    hash,
+    user: account._id,
+    action: OtpType.FORGOT_PASSWORD,
+    expireAt: expiry,
+  });
 
-  //save OTP to user
-  user.otp = otp;
-  user.otp_expires_at = otp_expires_at;
-
-  await user.save();
-
-  //send OTP through email
-  await sendEmail({
-    to: user.email,
-    subject: "Password Reset OTP",
-    html: generateForgotPasswordHtml(
-      user.full_name,
-      otp
-    ),
+  // send OTP email
+  sendEmail({
+    to: account.email,
+    subject: "Forgot Password OTP",
+    html: generateForgotPasswordHtml(account.full_name, otp),
   });
 
   sendResponse(res, {
     message: "OTP sent successfully to your email",
+    data: null,
+    statusCode: 200,
+  });
+});
+//reset password
+export const resetPassword = catchAsync(async (req, res) => {
+  const { password, otp } = req.body;
+  if (!password) throw new AppError("password is required", 400);
+  if (!otp) throw new AppError("otp is required", 400);
+
+  const otpHash = await Otp.findOne({
+    hash: createHash(otp),
+    action: OtpType.FORGOT_PASSWORD,
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (!otpHash) throw new AppError("otp does not exists or expired", 400);
+
+  const passHash = await hashPassword(password);
+
+  await User.findByIdAndUpdate(otpHash.user, {
+    password: passHash,
+  });
+
+  otpHash.active = false;
+  otpHash.expireAt = null;
+
+  await otpHash.save();
+
+  sendResponse(res, {
+    message: "password updated",
     data: null,
     statusCode: 200,
   });
