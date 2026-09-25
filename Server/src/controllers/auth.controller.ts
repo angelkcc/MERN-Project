@@ -1,13 +1,399 @@
+
+import User from "../models/user.model";
+import { comparePassword, hashPassword } from "../utlis/bcrypt.utlis";
+import AppError from "../utlis/appError.utlis";
+import sendResponse from "../utlis/sendResponse.utlis";
+import { catchAsync } from "../utlis/catchAsync.utlis";
+import { generateJwtToken } from "../utlis/jwt.utlis";
+import ENV_CONFIG from "../config/env.config";
+import { deleteFileFromCloudinary, uploadFileToCloudinary } from "../utlis/cloudinary.utlis";
+import { sendEmail } from "../utlis/sendEmail.utlis";
+import { generateAccountCreatedHtml, generateForgotPasswordHtml, generateLoginDetectedHtml } from "../utlis/emailTemplate";
+import { createHash, generateOtp } from "../utlis/otp.utlis";
+import Otp from "../models/otp.model";
+import { OtpType } from "../types/enum.types";
+
 //register
+export const register = catchAsync(async(req,res)=>{
+      
+        //data:fullname, email, password, role, profile_image, phone_number
+        const { full_name, email, password, phone_number } = req.body;
+        const file = req.file; //multer will add file property to request object if file is uploaded
+
+        if(!full_name)
+        {
+            /*const error: any= new Error("full_name is required");
+            error.status="fail";
+            error.statusCode=400;
+            error.success=false;
+            throw error;*/
+            throw new AppError("full_name is required",400);
+        }
+        if(!email)
+        {
+           /* const error: any= new Error("email is required");
+            error.status="fail";
+            error.statusCode=400;
+            error.success=false;
+            throw error;*/
+            throw new AppError("email is required",400);
+        }
+        if(!password)
+        {
+            /*const error: any= new Error("password is required");
+            error.status="fail";
+            error.statusCode=400;
+            error.success=false;
+            throw error;*/
+            throw new AppError("password is required",400);
+        }
+         if(password.length<6)
+        {
+            throw new AppError("password must be at least 6 characters long",400);
+        }
+
+        //create user instance--instance is created because of mongoose model and it is not saved in database yet
+        const user = new User({
+            full_name,
+            email,
+            password,
+            phone_number
+        });
+       
+        //hash password before saving to database
+        const hash = await hashPassword(password);
+        user.password = hash; //set hashed password to user instance
+
+        //upload profile image 
+            const folder = "/users";
+            if(file){
+            const {path, public_id}= await uploadFileToCloudinary(file, folder);
+            user.profile_image={
+                path,
+                public_id,
+            }
+        }
+  
+
+        //save user to database
+        await user.save(); //this method called as save will save the user instance to database and it will return a promise
+
+        //pass everything except password to response
+        const {password:_, ...rest}=user.toObject(); //toObject method will convert mongoose document to 
+        //plain javascript object and we are using destructuring to exclude password from response
+
+           await sendEmail({
+              to: user.email,
+              subject: "Account Created",
+               html: generateAccountCreatedHtml({
+               full_name: user.full_name,
+               email: user.email,
+               created_at: new Date(Date.now()),
+               user_agent: req.headers["user-agent"],
+             }),
+            });
+
+        //send response
+        /*res.status(201).json({
+            message: "user registered successfully",
+            success: true,
+            status: "success",
+            data: rest
+        });*/
+        sendResponse(res, {
+            statusCode: 201,
+            message: "user registered successfully",
+            data: rest
+        });
+    });
 
 //login
+export const login = catchAsync(async(req,res)=>{
+    
+        const{email,password}=req.body;
+        if(!email)
+        {
+            throw new AppError("email is required",400);
+        }
+        if(!password)
+        {
+            throw new AppError("password is required",400);
+        }
+
+        //find user by email
+        const user= await User.findOne({email}).select("+password");
+
+        //if user not found
+        if(!user)
+        {
+            throw new AppError("Invalid email or password",400);
+        }
+
+        //compare password
+        const isPasswordMatched= await comparePassword(password,user.password);
+        if(!isPasswordMatched)
+        {
+            throw new AppError("Invalid email or password",400);
+        }
+
+        //to do: generate jwt (json web token) and send it to client
+        const access_token= generateJwtToken({
+            _id:user._id,
+            role:user.role,
+            email:user.email
+        });
+
+
+        //dont send password in response
+        const{password:_,...rest}=user.toObject();
+
+       
+
+        //new email detected
+        sendEmail({
+           to: user.email,
+           subject: "New Login Detected",
+           html: generateLoginDetectedHtml({
+           full_name: user.full_name,
+           email: user.email,
+           logged_in_at: new Date(Date.now()),
+           user_agent: req.headers["user-agent"],
+    }),
+  });
+
+        //set cookie header
+        res.cookie("access_token", access_token, {
+            secure:ENV_CONFIG.NODE_ENV === "development" ? false : true,
+            httpOnly:ENV_CONFIG.NODE_ENV === "development" ? false : true,
+          // expires: new Date(Date.now() + Number(ENV_CONFIG.COOKIE_EXPIRES_IN) * 24 * 60 * 60 * 1000),
+          maxAge:ENV_CONFIG.COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000, //cookie will expire in 7 days
+           sameSite:ENV_CONFIG.NODE_ENV === "development" ? "lax" : "none",
+           
+        });
+
+        //send response
+        sendResponse(res,{
+            message:"user logged in successfully",
+            data:{
+                user:rest,
+                access_token
+            },
+            statusCode:201
+        });
+
+
+    });
+
+   
+
 
 //change password
+export const changePassword = catchAsync(async(req,res)=>
+{
+    const {oldPassword,newPassword}=req.body;
+    const { _id } = req.user;
+    
 
-//forgot password
+    if(!newPassword)
+    {
+        throw new AppError("new password is required",400);
+    }
+    if(!oldPassword)
+    {
+        throw new AppError("old password is required",400);
+    }
+   const user= await User.findById(_id).select("+password");
+   if(!user)
+   {
+    throw new AppError("user not found",404);
+   }
+
+   //check old password is correct or not
+   const isPasswordMatched= await comparePassword(oldPassword,user.password);
+    if(!isPasswordMatched)
+    {
+        throw new AppError("old password is incorrect",400);
+    }
+
+    //hash new password
+    const hash = await hashPassword(newPassword);
+    user.password= hash;
+    await user.save();
+
+    sendResponse(res,{
+        message:"password changed successfully",
+        data:null,
+        statusCode:200
+    });
+});
+//LOGOUT
+export const logout = catchAsync(async (req, res) => {
+
+    res.clearCookie("access_token", {
+        secure: ENV_CONFIG.NODE_ENV === "development" ? false : true,
+        httpOnly: ENV_CONFIG.NODE_ENV === "development" ? false : true,
+        sameSite: ENV_CONFIG.NODE_ENV === "development" ? "lax" : "none",
+    });
+
+    sendResponse(res, {
+        message: "user logged out successfully",
+        data: null,
+        statusCode: 200,
+    });
+});
+
+
+//GET PROFILE
+
+export const getProfile= catchAsync(async(req,res)=>{
+    const {_id}= req.user;
+
+    const profile= await User.findOne({_id});
+
+    if(!profile) throw new AppError("user not found",404);
+
+    sendResponse(res,{
+        message:"user profile fetched successfully",
+        data:profile,
+        statusCode:200
+    });
+});
+
+
+//forgot password (otp req +reset password)
+export const forgotPassword = catchAsync(async (req, res) => {
+
+  const { email } = req.body;
+
+  if (!email) {
+    throw new AppError("email is required", 400);
+  }
+
+  const account = await User.findOne({
+    email: email.toLowerCase(),
+  });
+
+  if (!account) {
+    throw new AppError("account not found", 404);
+  }
+
+  // generate OTP
+  const { otp, hash, expiry } = generateOtp();
+
+  // save OTP
+  await Otp.create({
+    hash,
+    user: account._id,
+    action: OtpType.FORGOT_PASSWORD,
+    expireAt: expiry,
+  });
+
+  // send OTP email
+  sendEmail({
+    to: account.email,
+    subject: "Forgot Password OTP",
+    html: generateForgotPasswordHtml(account.full_name, otp),
+  });
+
+  sendResponse(res, {
+    message: "OTP sent successfully to your email",
+    data: null,
+    statusCode: 200,
+  });
+});
+//reset password
+export const resetPassword = catchAsync(async (req, res) => {
+  const { password, otp } = req.body;
+  if (!password) throw new AppError("password is required", 400);
+  if (!otp) throw new AppError("otp is required", 400);
+
+  const otpHash = await Otp.findOne({
+    hash: createHash(otp),
+    action: OtpType.FORGOT_PASSWORD,
+    expiresAt: { $gt: new Date() },
+  });
+
+  if (!otpHash) throw new AppError("otp does not exists or expired", 400);
+
+  const passHash = await hashPassword(password);
+
+  await User.findByIdAndUpdate(otpHash.user, {
+    password: passHash,
+  });
+
+  otpHash.active = false;
+  otpHash.expireAt = null;
+
+  await otpHash.save();
+
+  sendResponse(res, {
+    message: "password updated",
+    data: null,
+    statusCode: 200,
+  });
+});
 
 
 //change email
+export const changeEmail= catchAsync(async(req,res)=>{
+    const {_id}= req.user;
+    const {email}= req.body;
+    if(!email)
+    {
+        throw new AppError("email is required",400);
+    }
+    const user= await User.findById(_id);
+    if(!user)
+    {
+        throw new AppError("user not found",404);
+    }
+    const existingUser= await User.findOne({
+        email:email.toLowerCase(),
+    });
+    if(existingUser)
+    {
+        throw new AppError("email already exists",400);
+    }
+    user.email=email.toLowerCase();
+    await user.save();
+    sendResponse(res,{
+        message:"email changed successfully",
+        data:null,
+        statusCode:200
+    });
+},
+);
 
 //update profile image
+export const changeProfileImage = catchAsync(async (req, res) => {
+  const { _id } = req.user;
+  const file = req.file;
+  if (!file) throw new AppError("image is required", 400);
+
+  const user = await User.findById(_id);
+
+  if (!user) throw new AppError("profile not found", 400);
+
+  const { public_id, path } = await uploadFileToCloudinary(
+    file,
+    "/profile_images",
+  );
+
+  if (user.profile_image) {
+    await deleteFileFromCloudinary(user.profile_image?.public_id);
+  }
+
+  user.profile_image = {
+    public_id,
+    path,
+  };
+
+  await user.save();
+
+  sendResponse(res, {
+    message: "profile updated",
+    data: user,
+    statusCode: 200,
+  });
+});
 
