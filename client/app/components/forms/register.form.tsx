@@ -1,9 +1,29 @@
-import Button from "../ui/buttons/button";
-import Input from "../ui/inputs/input";
+'use client'
+
+import Input from '../ui/inputs/input'
+import Button from '../ui/buttons/button'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { RegisterInput } from '@/app/types/auth.types'
 
 const RegisterForm = () => {
+
+    const { register, handleSubmit } = useForm<RegisterInput>({
+        defaultValues: {
+            full_name: '',
+            email: '',
+            password: ''
+        }
+    })
+
+    const onSubmit: SubmitHandler<RegisterInput> = (formData) => {
+        console.log('form submitted', formData)
+    }
+
     return (
-        <form className="flex flex-col gap-4">
+        <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex flex-col gap-4"
+        >
 
             {/* Full Name */}
             <Input
@@ -11,6 +31,7 @@ const RegisterForm = () => {
                 name="full_name"
                 id="full_name"
                 label="Full Name"
+                register={register}
                 required={true}
             />
 
@@ -20,6 +41,7 @@ const RegisterForm = () => {
                 name="email"
                 id="email"
                 label="Email"
+                register={register}
                 required={true}
             />
 
@@ -30,19 +52,11 @@ const RegisterForm = () => {
                 id="password"
                 label="Password"
                 type="password"
+                register={register}
                 required={true}
             />
 
-            {/* Phone Number */}
-            <Input
-                placeholder="98XXXXXXXX"
-                name="phone_number"
-                id="phone_number"
-                label="Phone Number"
-                required={false}
-            />
-
-            <div className="w-full mt-2">
+            <div className="w-full mt-3">
                 <Button
                     type="submit"
                     label="Register"
@@ -50,7 +64,7 @@ const RegisterForm = () => {
             </div>
 
         </form>
-    );
-};
+    )
+}
 
-export default RegisterForm;
+export default RegisterForm
