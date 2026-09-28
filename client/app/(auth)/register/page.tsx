@@ -1,5 +1,6 @@
 import RegisterForm from "@/app/components/forms/register.form";
 import { Metadata } from "next";
+import Link from 'next/link';
 import React from "react";
 
 export const metadata: Metadata = {
@@ -26,6 +27,11 @@ const RegisterPage = () => {
 
                 {/* Form */}
                 <RegisterForm />
+                 <div className='text-center mt-1'>
+                    <p className='text-xs'>
+                        Already have an Account? <Link href={'/login'} ><span className='text-blue-500 text-center italic'>Login</span></Link>
+                    </p>
+                </div>
 
             </div>
 
