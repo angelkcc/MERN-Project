@@ -8,9 +8,10 @@ interface IProps<T extends FieldValues> {
     type?: 'text' | 'number' | 'password'
     required?: boolean
     register: UseFormRegister<T>
+    error?:string
 }
 
-function Input<T extends FieldValues>({ name, id, label, type = 'text', placeholder, required = false, register }: IProps<T>) {
+function Input<T extends FieldValues>({error, name, id, label, type = 'text', placeholder, required = false, register }: IProps<T>) {
     return (
         <div className='flex flex-col gap-1'>
             <div className="flex">
@@ -18,14 +19,15 @@ function Input<T extends FieldValues>({ name, id, label, type = 'text', placehol
                 {required && <LuAsterisk size={14} className="text-red-400" />}
             </div>
             <input
-                className='border border-gray-200  py-2 px-2.5 rounded-sm focus:border-blue-500 focus:outline-blue-500'
+                className={'border border-gray-200  py-2 px-2.5 rounded-sm ' + (error ? 'border-red-500 focus:border-red-500 focus:outline-red-500' : 'border-gray-200 focus:border-blue-500 focus:outline-blue-500')}
                 placeholder={placeholder}
                 {...register(name)}
                 // name={name}
                 id={id}
                 type={type}
-            // onChange={onChange}
+            
             />
+            <small className="text-red-500 h-4 -mt-1">{error}</small>
         </div >
     )
 }

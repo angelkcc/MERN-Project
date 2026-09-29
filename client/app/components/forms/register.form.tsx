@@ -4,15 +4,21 @@ import Input from '../ui/inputs/input'
 import Button from '../ui/buttons/button'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { RegisterInput } from '@/app/types/auth.types'
+import { registerSchema } from '@/app/schema/auth.schema'
+import { yupResolver } from '@hookform/resolvers/yup'
 
 const RegisterForm = () => {
 
-    const { register, handleSubmit } = useForm<RegisterInput>({
+    const { register, handleSubmit , formState: { errors } } = useForm<RegisterInput>({
         defaultValues: {
             full_name: '',
             email: '',
-            password: ''
-        }
+            password: '',
+            c_password: '',
+            phone: '',
+        },
+        resolver: yupResolver(registerSchema),
+        mode: 'all',
     })
 
     const onSubmit: SubmitHandler<RegisterInput> = (formData) => {
@@ -22,8 +28,7 @@ const RegisterForm = () => {
     return (
         <form
             onSubmit={handleSubmit(onSubmit)}
-            className="flex flex-col gap-4"
-        >
+            className="flex flex-col gap-1">
 
             {/* Full Name */}
             <Input
@@ -33,6 +38,7 @@ const RegisterForm = () => {
                 label="Full Name"
                 register={register}
                 required={true}
+                error={errors?.full_name?.message}
             />
 
             {/* Email */}
@@ -43,6 +49,7 @@ const RegisterForm = () => {
                 label="Email"
                 register={register}
                 required={true}
+                error={errors?.email?.message}
             />
 
             {/* Password */}
@@ -54,7 +61,30 @@ const RegisterForm = () => {
                 type="password"
                 register={register}
                 required={true}
+                error={errors?.password?.message}
             />
+            {/* Confirm Password */}
+            <Input
+                placeholder="Confirm your password"
+                name="c_password"
+                id="c_password"
+                label="Confirm Password"
+                type="password"
+                register={register}
+                required={true}
+                error={errors?.c_password?.message}
+            />
+            {/* Phone */}
+            <Input
+                placeholder="Enter your phone number"
+                name="phone"
+                id="phone"
+                label="Phone"
+                type="number"
+                register={register}
+                required={false}
+                error={errors?.phone?.message}
+            />  
 
             <div className="w-full mt-3">
                 <Button

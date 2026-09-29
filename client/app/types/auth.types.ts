@@ -1,2 +1,4 @@
-export type RegisterInput = { full_name: string; email: string; password: string };
-export type LoginInput = { email: string; password: string };
+import { loginSchema, registerSchema } from "@/app/schema/auth.schema";
+import * as yup from "yup";
+export type LoginInput = yup.InferType<typeof loginSchema>;
+export type RegisterInput = yup.InferType<typeof registerSchema>;
