@@ -8,6 +8,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { loginSchema } from '@/app/schema/auth.schema'
 import { login } from '@/api/auth.api'
 import { useMutation } from '@tanstack/react-query'
+import toast from 'react-hot-toast'
 
 
 const LoginForm = () => {
@@ -24,9 +25,12 @@ const LoginForm = () => {
     const { isPending, mutate } = useMutation({
         mutationFn: login,
         onSuccess: (response) => {
+            // Show a success message
+            toast.success("Login successful! 🎉");
             console.log('on mutation success', response)
         },
         onError: (error) => {
+            toast.error("Invalid email or password");
             console.log('on mutation error', error)
         }
     })

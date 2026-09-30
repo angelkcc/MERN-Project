@@ -8,6 +8,7 @@ import { registerSchema } from '@/app/schema/auth.schema'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { useMutation } from '@tanstack/react-query'
 import { Register } from '@/api/auth.api'
+import toast from 'react-hot-toast'
 
 const RegisterForm = () => {
 
@@ -25,9 +26,11 @@ const RegisterForm = () => {
     const { isPending, mutate } = useMutation({
             mutationFn: Register,
             onSuccess: (response) => {
+                toast.success("Registration successful! 🎉");
                 console.log('on mutation success', response)
             },
             onError: (error) => {
+                toast.error("Registration failed. Please check your input and try again.");
                 console.log('on mutation error', error)
             }
         })
