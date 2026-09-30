@@ -1,36 +1,41 @@
+'use client'
 import LoginForm from "@/app/components/forms/login.form";
-import { Metadata } from "next";
-import React from "react";
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { Metadata } from 'next'
+import Link from 'next/link'
 
-export const metadata: Metadata = {
-    title: "Login | Ecommerce",
-    description: "Login page for Ecommerce",
-};
+// export const metadata: Metadata = {
+//     title: 'Login | E Commerce',
+//     description: ''
+// }
 
-const LoginPage = () => {
+const client = new QueryClient()
+
+const Login = () => {
     return (
-        <main className="min-h-screen flex justify-center items-center bg-gray-50 px-4">
-
-            <div className="w-full max-w-md bg-white border border-gray-200 rounded-lg p-6 shadow-sm">
-
-                {/* Title */}
-                <div className="flex flex-col gap-2 mb-6">
-                    <h1 className="text-3xl text-gray-700 text-center font-semibold">
-                        Login
-                    </h1>
-
-                    <p className="text-sm text-gray-500 text-center">
-                        Fill the form below to continue
-                    </p>
+        <main className='tracking-wider h-screen flex justify-center items-center flex-col '>
+            {/* container */}
+            <div className='border border-gray-300 px-3 py-4 rounded-md min-h-75 w-75'>
+                {/* title */}
+                <div className='flex flex-col gap-1 mb-5'>
+                    <h1 className='text-2xl font-semibold text-gray-600 text-center'>Login</h1>
+                    <p className=' text-xs text-gray-500 text-center'>Fill the from below to continue shopping.</p>
                 </div>
 
-                {/* Form */}
-                <LoginForm />
+                {/* form */}
+                <QueryClientProvider client={client}>
 
+                    <LoginForm />
+                </QueryClientProvider>
+                {/* link */}
+                <div className='text-center'>
+                    <Link href={'/forgot-password'} ><small className='text-blue-500 text-center '>forgot password?</small></Link>
+                    <p className='text-xs'>
+                        Don&apos;t have an Account? <Link href={'/register'} ><span className='text-blue-500 text-center italic'>Create Account</span></Link>
+                    </p>
+                </div>
             </div>
-
         </main>
-    );
-};
-
-export default LoginPage;
+    )
+}
+export default Login

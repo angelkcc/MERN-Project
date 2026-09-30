@@ -1,11 +1,7 @@
-import { IJwtPayload } from "../utils/jwt.utils";
+import type { IJwtPayload } from "../utlis/jwt.utils";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user: IJwtPayload;
-    }
+declare module "express-serve-static-core" {
+  interface Request {
+    user: IJwtPayload;
   }
 }
-
-export {};

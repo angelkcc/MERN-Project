@@ -6,6 +6,8 @@ import { SubmitHandler, useForm } from 'react-hook-form'
 import { RegisterInput } from '@/app/types/auth.types'
 import { registerSchema } from '@/app/schema/auth.schema'
 import { yupResolver } from '@hookform/resolvers/yup'
+import { useMutation } from '@tanstack/react-query'
+import { Register } from '@/api/auth.api'
 
 const RegisterForm = () => {
 
@@ -20,9 +22,19 @@ const RegisterForm = () => {
         resolver: yupResolver(registerSchema),
         mode: 'all',
     })
+    const { isPending, mutate } = useMutation({
+            mutationFn: Register,
+            onSuccess: (response) => {
+                console.log('on mutation success', response)
+            },
+            onError: (error) => {
+                console.log('on mutation error', error)
+            }
+        })
+    
 
     const onSubmit: SubmitHandler<RegisterInput> = (formData) => {
-        console.log('form submitted', formData)
+        mutate(formData)
     }
 
     return (
@@ -89,7 +101,8 @@ const RegisterForm = () => {
             <div className="w-full mt-3">
                 <Button
                     type="submit"
-                    label="Register"
+                    disabled={isPending}
+                    label={isPending ? 'Registering....' : 'Register'}
                 />
             </div>
 
