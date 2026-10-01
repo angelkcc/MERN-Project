@@ -1,15 +1,15 @@
-'use client'
+
 import LoginForm from "@/app/components/forms/login.form";
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+//import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { Metadata } from 'next'
 import Link from 'next/link'
 
-// export const metadata: Metadata = {
-//     title: 'Login | E Commerce',
-//     description: ''
-// }
+export const metadata: Metadata = {
+   title: 'Login | E Commerce',
+     description: ''
+ }
 
-const client = new QueryClient()
+//const client = new QueryClient()
 
 const Login = () => {
     return (
@@ -23,10 +23,10 @@ const Login = () => {
                 </div>
 
                 {/* form */}
-                <QueryClientProvider client={client}>
+               
 
                     <LoginForm />
-                </QueryClientProvider>
+                
                 {/* link */}
                 <div className='text-center'>
                     <Link href={'/forgot-password'} ><small className='text-blue-500 text-center '>forgot password?</small></Link>
