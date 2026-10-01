@@ -8,7 +8,10 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { loginSchema } from '@/app/schema/auth.schema'
 import { login } from '@/api/auth.api'
 import { useMutation } from '@tanstack/react-query'
+import { useRouter } from 'next/navigation'
 import toast from 'react-hot-toast'
+import { Role } from '@/app/types/enum.types'
+
 
 
 const LoginForm = () => {
@@ -20,7 +23,8 @@ const LoginForm = () => {
         resolver: yupResolver(loginSchema),
         mode: 'all'
     })
-
+    
+    const router = useRouter()
 
     const { isPending, mutate } = useMutation({
         mutationFn: login,
@@ -28,6 +32,11 @@ const LoginForm = () => {
             // Show a success message
             toast.success("Login successful! 🎉");
             console.log('on mutation success', response)
+            if(response.data.user.role==Role.ADMIN){
+                router.replace('/admin')
+            } else{
+                router.replace('/')
+            }
         },
         onError: (error) => {
             toast.error("Invalid email or password");
