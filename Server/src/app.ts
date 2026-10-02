@@ -19,6 +19,7 @@ app.use(cookieParser()); //this parser parses the cookie from request and adds i
 app.use(
   cors({
     origin: ["http://localhost:3000"],
+    credentials: true,
   }),
 )
 //also parser makes key value pair of cookie

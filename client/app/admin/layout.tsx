@@ -1,33 +1,20 @@
-import React from "react"
-import Sidebar from "../components/layout/admin/sidebar"
-import AdminHeader from "../components/layout/admin/header"
+import AdminHeader from '@/app/components/layout/admin/header'
+import Sidebar from '@/app/components/layout/admin/sidebar'
+import React from 'react'
 
-const AdminLayout = ({
-    children
-}: Readonly<{
-    children: React.ReactNode
-}>) => {
-
+const AdminLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
     return (
-        <div className="min-h-screen bg-gray-100 flex">
-
-            {/* Sidebar */}
+        <main className='flex h-screen w-full'>
+            {/* sidebar  */}
             <Sidebar />
-
-            {/* Main area */}
-            <div className="flex-1 flex flex-col">
-
-                {/* Header */}
+            <section className='w-full'>
+                {/* header */}
                 <AdminHeader />
-
-                {/* Page content */}
-                <main className="flex-1 p-6">
+                <section className='p-1'>
                     {children}
-                </main>
-
-            </div>
-
-        </div>
+                </section>
+            </section>
+        </main>
     )
 }
 

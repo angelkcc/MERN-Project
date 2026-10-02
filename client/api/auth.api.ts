@@ -1,14 +1,12 @@
 import { LoginInput, RegisterInput } from "@/app/types/auth.types";
 import axios, { AxiosError } from "axios";
+import api from "./index";
 
 //* mutation function
 export const login = async (data: LoginInput) => {
   try {
     // send post req
-    const response = await axios.post(
-      "http://localhost:8080/api/v1/auth/login",
-      data,
-    );
+    const response = await api.post("/auth/login", data);
     return response.data;
   } catch (error: unknown) {
     if (error instanceof AxiosError) {
@@ -18,16 +16,13 @@ export const login = async (data: LoginInput) => {
 };
 
 // register
-export const Register = async (data: RegisterInput) => {
-    try{
-        const response = await axios.post(
-            "http://localhost:8080/api/v1/auth/register",
-            data
-        );
-        return response.data;
-    } catch (error: unknown) {
-        if (error instanceof AxiosError) {
-            throw error?.response?.data;
-        }
+export const createAccount = async (data: RegisterInput) => {
+  try {
+    const response = await api.post("/auth/register", data);
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw error?.response?.data;
     }
+  }
 };
