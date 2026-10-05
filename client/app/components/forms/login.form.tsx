@@ -1,20 +1,20 @@
 'use client'
-
-import Input from '../ui/inputs/input'
-import Button from '../ui/buttons/button'
+import Button from '@/app/components/ui/buttons/button'
+import Input from '@/app/components/ui/inputs/input'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { LoginInput } from '@/app/types/auth.types'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { loginSchema } from '@/app/schema/auth.schema'
 import { login } from '@/api/auth.api'
-import { useMutation } from '@tanstack/react-query'
-import { useRouter } from 'next/navigation'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 import { Role } from '@/app/types/enum.types'
 
 
-
 const LoginForm = () => {
+    const router = useRouter()
+    const queryClient = useQueryClient()
     const { register, handleSubmit, formState: { errors } } = useForm<LoginInput>({
         defaultValues: {
             email: '',
@@ -23,24 +23,25 @@ const LoginForm = () => {
         resolver: yupResolver(loginSchema),
         mode: 'all'
     })
-    
-    const router = useRouter()
 
     const { isPending, mutate } = useMutation({
         mutationFn: login,
         onSuccess: (response) => {
-            // Show a success message
-            toast.success("Login successful! 🎉");
-            console.log('on mutation success', response)
-            if(response.data.user.role==Role.ADMIN){
+            //* navigate user based on role
+            if (response.data.user.role === Role.ADMIN) {
                 router.replace('/admin')
-            } else{
+            } else {
                 router.replace('/')
             }
+            toast.success(response.message ?? 'login successful!')
+            console.log(response.data.user)
+            queryClient.invalidateQueries({
+                queryKey: ['profile']
+            })
         },
         onError: (error) => {
-            toast.error("Invalid email or password");
-            console.log('on mutation error', error)
+            toast.error(error?.message ?? 'something went wrong')
+
         }
     })
 
