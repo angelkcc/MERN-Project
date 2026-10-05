@@ -26,3 +26,29 @@ export const createAccount = async (data: RegisterInput) => {
     }
   }
 };
+
+
+
+//logout
+export const logout = async () => {
+  try {
+    const response = await api.post("/auth/logout");
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw error?.response?.data;
+    }
+  }
+};
+
+// get profile
+export const getProfile = async () => {
+  try {
+    const response = await api.get("/auth/profile");
+    return response.data;
+  } catch (error: unknown) {
+    if (error instanceof AxiosError) {
+      throw error?.response?.data;
+    }
+  }
+};
