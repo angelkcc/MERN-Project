@@ -1,3 +1,6 @@
+'use client'
+import withAuth from '@/hoc/withAuth.hoc'
+import { Role } from '@/app/types/enum.types'
 import React from 'react'
 
 const CartPage = () => {
@@ -8,4 +11,5 @@ const CartPage = () => {
     )
 }
 
-export default CartPage
+const ProtectedCart = withAuth(CartPage, [Role.USER])
+export default ProtectedCart
