@@ -1,9 +1,5 @@
 import React from 'react'
 import NavLinks from './nav-links'
-import UserProfile from '@/app/components/ui/user-profile'
-import { HiOutlineShoppingBag } from "react-icons/hi2";
-import { FaRegHeart } from "react-icons/fa6";
-import Link from 'next/link';
 import AuthSection from './authSection';
 const NavBar = () => {
     return (
