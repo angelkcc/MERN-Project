@@ -1,24 +1,15 @@
+import Footer from '@/app/components/layout/client/footer'
+import NavBar from '@/app/components/layout/client/nav'
 import React from 'react'
-import Footer from "../components/layout/client/footer"
-import NavBar from "../components/layout/client/nav"
 
-const ClientLayout = ({
-    children,
-}: Readonly<{
-    children: React.ReactNode
-}>) => {
-
+const ClientLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
     return (
-        <main className="min-h-screen flex flex-col">
-
+        <main>
             <NavBar />
-
-            <section className="flex-1 pt-16">
+            <section className='min-h-[80vh] relative top-16 z-0'>
                 {children}
             </section>
-
             <Footer />
-
         </main>
     )
 }

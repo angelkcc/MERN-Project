@@ -1,3 +1,6 @@
+'use client'
+import withAuth from '@/hoc/withAuth.hoc'
+import { Role } from '@/app/types/enum.types'
 import React from 'react'
 
 const WishlistPage = () => {
@@ -8,4 +11,5 @@ const WishlistPage = () => {
     )
 }
 
-export default WishlistPage
+const ProtectedWishlist = withAuth(WishlistPage, [Role.USER])
+export default ProtectedWishlist
