@@ -9,14 +9,15 @@ import {
 import { validate } from "../middlewares/validator.middleware";
 import { createCategoryValidator, updateCategoryValidator } from "../validators/category.validator";
 import multerFileUploader from "../middlewares/multer.middleware";
-import { authenticate } from "../middlewares/auth.middleware";
+//import { authenticate } from "../middlewares/auth.middleware";
 //import { Role } from "../types/enum.types";
 
 const router = express.Router();
 const upload = multerFileUploader();
 
 //* get all
-router.get("/",authenticate(), getAll);
+router.get("/",//authenticate(),
+   getAll);
 
 //* get by id
 router.get("/:id", getById);
