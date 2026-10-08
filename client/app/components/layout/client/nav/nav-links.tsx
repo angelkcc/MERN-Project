@@ -34,7 +34,7 @@ const links: TNavItem[] = [
 
 const NavLinks = () => {
     return (
-        <div className='flex gap-2 font-semibold text-gray-500'>
+        <div className='flex gap-2 font-semibold text-gray-700'>
             {
                 links.map((item) => <NavLink key={item.id} item={item} />)
             }

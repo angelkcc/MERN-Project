@@ -4,9 +4,9 @@ import React from 'react'
 
 const ClientLayout = ({ children }: Readonly<{ children: React.ReactNode }>) => {
     return (
-        <main>
+        <main className='h-screen'>
             <NavBar />
-            <section className='min-h-[80vh] relative top-16 z-0'>
+            <section className='min-h-screen z-10 mt-16 mb-20'>
                 {children}
             </section>
             <Footer />
