@@ -6,6 +6,7 @@ import cors from "cors";
 //importing routes
 import routes from "./routes/index";
 import AppError from "./utlis/appError.utlis";
+import ENV_CONFIG from "./config/env.config";
 
 //! @types/<pkg_name>
 // npm i --save-dev <pkg_name>
@@ -13,12 +14,14 @@ import AppError from "./utlis/appError.utlis";
 
 //* express app
 const app = express();
+const origins= ENV_CONFIG.ORIGINS.split(",")??[];
+console.log(origins);
 
 //* using middlewares
 app.use(cookieParser()); //this parser parses the cookie from request and adds it to req.cookies object
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: origins,
     credentials: true,
   }),
 )

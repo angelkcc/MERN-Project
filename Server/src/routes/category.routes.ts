@@ -10,7 +10,7 @@ import { validate } from "../middlewares/validator.middleware";
 import { createCategoryValidator, updateCategoryValidator } from "../validators/category.validator";
 import multerFileUploader from "../middlewares/multer.middleware";
 import { authenticate } from "../middlewares/auth.middleware";
-import { Role } from "../types/enum.types";
+//import { Role } from "../types/enum.types";
 
 const router = express.Router();
 const upload = multerFileUploader();
@@ -24,7 +24,7 @@ router.get("/:id", getById);
 //* create
 router.post(
   "/",
-  authenticate([Role.ADMIN]),
+  //authenticate([Role.ADMIN]),
   upload.single("image"),
   validate(createCategoryValidator),
   create,
