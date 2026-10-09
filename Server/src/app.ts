@@ -14,7 +14,10 @@ import ENV_CONFIG from "./config/env.config";
 
 //* express app
 const app = express();
-const origins= ENV_CONFIG.ORIGINS.split(",")??[];
+const origins = ENV_CONFIG.ORIGINS
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 console.log(origins);
 
 //* using middlewares
