@@ -1,12 +1,13 @@
 import { TCategory } from '@/app/types/category.types'
 import Image from 'next/image'
+import Link from 'next/link'
 import React from 'react'
 
 type TProps = {
     category: TCategory
 }
 
-const CategoryCard = ({ category: { name, description, image } }: TProps) => {
+const CategoryCard = ({ category: { _id, name, description, image } }: TProps) => {
     return (
         <div className='min-h-60 mt-5 shadow pb-4 cursor-pointer'>
             {/* image */}
@@ -24,6 +25,7 @@ const CategoryCard = ({ category: { name, description, image } }: TProps) => {
                 <h4 className='text-gray-700 font-semibold text-md mt-2'>{name}</h4>
                 <p className='text-[13px] text-gray-600 line-clamp-3 mt-1 leading-4 '>{description}</p>
             </div>
+
 
         </div>
     )
